@@ -8,6 +8,7 @@ import { PageLoader } from './components/LoadingSpinner';
 
 import LoginPage from './pages/LoginPage';
 import ActivatePage from './pages/ActivatePage';
+import InviteParticipantPage from './pages/InviteParticipantPage';
 import RsvpPage from './pages/RsvpPage';
 import AdminDashboard from './pages/dashboard/AdminDashboard';
 import ParticipantDashboard from './pages/dashboard/ParticipantDashboard';
@@ -126,6 +127,9 @@ export default function App() {
             } />
             <Route path="/participants" element={
               <AuthRequired adminOnly><AppLayout><ParticipantsPage /></AppLayout></AuthRequired>
+            } />
+            <Route path="/invite-participant" element={
+              <AuthRequired adminOnly><AppLayout><InviteParticipantPage /></AppLayout></AuthRequired>
             } />
             <Route path="/matches" element={
               <AuthRequired adminOnly><AppLayout><MatchesPage /></AppLayout></AuthRequired>
