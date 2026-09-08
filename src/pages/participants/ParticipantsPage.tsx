@@ -6,11 +6,11 @@ import { useToast } from '../../hooks/useToast';
 import Avatar from '../../components/Avatar';
 import StatusBadge from '../../components/StatusBadge';
 import { PageLoader } from '../../components/LoadingSpinner';
-import { X, Search, ChevronRight, CheckCircle, Loader2 } from 'lucide-react';
+import { X, Search, ChevronRight } from 'lucide-react';
 import { FIELD_OPTIONS, CAREER_STAGES, COMM_STYLES, CADENCE_OPTIONS, AVAILABILITY_OPTIONS } from '../../lib/constants';
 import type { Participant } from '../../lib/supabase';
 
-const FILTER_TABS = ['All', 'Mentors', 'Mentees', 'Pending', 'Alumni'];
+const FILTER_TABS = ['All', 'Mentors', 'Mentees', 'Awaiting Activation', 'Alumni'];
 
 function DrawerField({ label, value }: { label: string; value: unknown }) {
   if (!value || (Array.isArray(value) && !value.length)) return null;
@@ -29,7 +29,6 @@ function EditForm({ participant, onSave, onClose }: { participant: Participant; 
   const [title, setTitle] = useState(participant.title);
   const [org, setOrg] = useState(participant.organization);
   const [city, setCity] = useState(participant.city);
-  const [status, setStatus] = useState(participant.status);
   const [careerStage, setCareerStage] = useState(participant.career_stage);
   const [primaryField, setPrimaryField] = useState(participant.primary_field);
   const [commStyle, setCommStyle] = useState(participant.communication_style);
@@ -61,7 +60,7 @@ function EditForm({ participant, onSave, onClose }: { participant: Participant; 
   async function handleSave() {
     setSaving(true);
     const { error } = await supabase.from('participants').update({
-      name, phone, title, organization: org, city, status,
+      name, phone, title, organization: org, city,
       career_stage: careerStage, primary_field: primaryField,
       communication_style: commStyle, meeting_format: meetingPref,
       availability, cadence,
@@ -84,7 +83,6 @@ function EditForm({ participant, onSave, onClose }: { participant: Participant; 
         <div><p className="text-xs font-semibold mb-1" style={{ color: '#6b6560' }}>Title</p>{inp(title, setTitle)}</div>
         <div><p className="text-xs font-semibold mb-1" style={{ color: '#6b6560' }}>Organization</p>{inp(org, setOrg)}</div>
         <div><p className="text-xs font-semibold mb-1" style={{ color: '#6b6560' }}>City</p>{inp(city, setCity)}</div>
-        <div><p className="text-xs font-semibold mb-1" style={{ color: '#6b6560' }}>Status</p>{sel(['Pending', 'Active', 'Alumni'], status, setStatus)}</div>
         <div><p className="text-xs font-semibold mb-1" style={{ color: '#6b6560' }}>Career Stage</p>{sel(CAREER_STAGES, careerStage, setCareerStage, 'Select…')}</div>
         <div><p className="text-xs font-semibold mb-1" style={{ color: '#6b6560' }}>Primary Field</p>{sel(FIELD_OPTIONS, primaryField, setPrimaryField, 'Select…')}</div>
         <div><p className="text-xs font-semibold mb-1" style={{ color: '#6b6560' }}>Meeting Pref.</p>{sel(['Virtual', 'In-Person', 'Either'], meetingPref, setMeetingPref, 'Select…')}</div>
@@ -104,7 +102,6 @@ function EditForm({ participant, onSave, onClose }: { participant: Participant; 
 
 export default function ParticipantsPage() {
   const [searchParams] = useSearchParams();
-  const { showToast } = useToast();
   const appUser = useAppUser();
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
@@ -112,7 +109,6 @@ export default function ParticipantsPage() {
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Participant | null>(null);
   const [editing, setEditing] = useState(false);
-  const [approving, setApproving] = useState(false);
 
   const load = useCallback(async () => {
     const { data } = await supabase.from('participants').select('*').order('created_at', { ascending: false });
@@ -126,29 +122,16 @@ export default function ParticipantsPage() {
     const matchTab = filter === 'All' ? true
       : filter === 'Mentors' ? p.role === 'Mentor'
       : filter === 'Mentees' ? p.role === 'Mentee'
-      : filter === 'Pending' ? p.status === 'Pending'
+      : filter === 'Awaiting Activation' ? p.status === 'Pending'
       : p.status === 'Alumni';
     const q = search.toLowerCase();
     const matchSearch = !q || p.name.toLowerCase().includes(q) || p.organization.toLowerCase().includes(q) || p.email.toLowerCase().includes(q);
     return matchTab && matchSearch;
   });
 
-  async function handleApprove(p: Participant) {
-    setApproving(true);
-    const { error } = await supabase.from('participants').update({ status: 'Active' }).eq('id', p.id);
-    if (error) {
-      showToast('Approval failed.', 'error');
-    } else {
-      showToast(`${p.name} approved!`, 'success');
-      await load();
-      setSelected(prev => prev?.id === p.id ? { ...prev, status: 'Active' } : prev);
-    }
-    setApproving(false);
-  }
-
   if (loading) return <PageLoader />;
 
-  const pendingCount = participants.filter(p => p.status === 'Pending').length;
+  const awaitingActivationCount = participants.filter(p => p.status === 'Pending').length;
 
   return (
     <div className="p-6 md:p-8">
@@ -169,9 +152,9 @@ export default function ParticipantsPage() {
               style={filter === tab ? { background: '#0a1f3c', color: 'white' } : { color: '#6b6560' }}
             >
               {tab}
-              {tab === 'Pending' && pendingCount > 0 &&
-                <span className="ml-1.5 text-xs px-1.5 py-0.5 rounded-full" style={{ background: filter === 'Pending' ? 'rgba(255,255,255,0.2)' : '#fef3e2', color: filter === 'Pending' ? 'white' : '#c8922a' }}>
-                  {pendingCount}
+              {tab === 'Awaiting Activation' && awaitingActivationCount > 0 &&
+                <span className="ml-1.5 text-xs px-1.5 py-0.5 rounded-full" style={{ background: filter === 'Awaiting Activation' ? 'rgba(255,255,255,0.2)' : '#fef3e2', color: filter === 'Awaiting Activation' ? 'white' : '#c8922a' }}>
+                  {awaitingActivationCount}
                 </span>}
             </button>
           ))}
@@ -262,6 +245,12 @@ export default function ParticipantsPage() {
                     </div>
                   </div>
 
+                  {selected.status === 'Pending' && (
+                    <div className="mb-5 rounded-lg px-4 py-3 text-sm" style={{ background: '#fef3e2', color: '#8a5b11', border: '1px solid #f2d8a5' }}>
+                      Awaiting portal activation. Application approval is managed in Airtable; this participant becomes Active when they complete their invitation activation.
+                    </div>
+                  )}
+
                   <div className="mb-4 pb-4 border-b" style={{ borderColor: '#f0ebe2' }}>
                     <DrawerField label="Email" value={selected.email} />
                     <DrawerField label="Phone" value={selected.phone} />
@@ -286,25 +275,16 @@ export default function ParticipantsPage() {
                   {selected.goals_text && <div className="mb-3"><p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: '#6b6560' }}>Program Goals</p><p className="text-sm" style={{ color: '#2d2d2d', lineHeight: 1.6 }}>{selected.goals_text}</p></div>}
                   {selected.topics_text && <div className="mb-3"><p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: '#6b6560' }}>Topics to Discuss</p><p className="text-sm" style={{ color: '#2d2d2d', lineHeight: 1.6 }}>{selected.topics_text}</p></div>}
                   {selected.match_notes && <div className="mb-3"><p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: '#6b6560' }}>Match Notes</p><p className="text-sm" style={{ color: '#2d2d2d', lineHeight: 1.6 }}>{selected.match_notes}</p></div>}
-
-                  {selected.status === 'Pending' && appUser?.is_admin && (
-                    <div className="mt-6">
-                      <button
-                        onClick={() => handleApprove(selected)}
-                        disabled={approving}
-                        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white transition-opacity"
-                        style={{ background: '#1a6b6e', opacity: approving ? 0.7 : 1 }}
-                      >
-                        {approving ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
-                        {approving ? 'Approving…' : 'Approve Participant'}
-                      </button>
-                    </div>
-                  )}
                 </>
               ) : (
                 <EditForm
                   participant={selected}
-                  onSave={async () => { await load(); setEditing(false); setSelected(prev => participants.find(p => p.id === prev?.id) || prev); }}
+                  onSave={async () => {
+                    await load();
+                    setEditing(false);
+                    const { data } = await supabase.from('participants').select('*').eq('id', selected.id).maybeSingle();
+                    if (data) setSelected(data);
+                  }}
                   onClose={() => setEditing(false)}
                 />
               )}

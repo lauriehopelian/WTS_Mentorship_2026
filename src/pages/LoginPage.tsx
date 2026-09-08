@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { AppUser } from '../App';
 
@@ -39,14 +38,7 @@ export default function LoginPage({ onLogin }: Props) {
 
     if (!participant) {
       await supabase.auth.signOut();
-      setError('No account found for this email. Please register or contact your program administrator.');
-      setLoading(false);
-      return;
-    }
-
-    if (participant.status === 'Pending' && !participant.is_admin) {
-      await supabase.auth.signOut();
-      setError('Your application is pending review. You will receive an email when approved.');
+      setError('Portal access is available only to approved WTS CenCal mentorship program participants.');
       setLoading(false);
       return;
     }
@@ -56,6 +48,7 @@ export default function LoginPage({ onLogin }: Props) {
       email: participant.email,
       name: participant.name,
       role: participant.role,
+      status: participant.status,
       is_admin: participant.is_admin,
       participant_id: participant.id,
       avatar_color: participant.avatar_color,
@@ -202,10 +195,9 @@ export default function LoginPage({ onLogin }: Props) {
                 </button>
               </form>
 
-              <p className="text-center text-sm mt-6" style={{ color: '#5a7a9a' }}>
-                New to the program?{' '}
-                <Link to="/register" className="font-semibold" style={{ color: '#2563a8' }}>Apply here</Link>
-              </p>
+              <div className="mt-6 rounded-lg px-4 py-3 text-center text-sm" style={{ background: '#e8eef6', color: '#5a7a9a' }}>
+                Portal access is provided by invitation after your mentorship program application is approved.
+              </div>
             </>
           )}
 
