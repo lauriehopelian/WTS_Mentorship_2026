@@ -46,7 +46,7 @@ export default function SettingsPage() {
 
   async function handleReset() {
     await supabase.auth.signOut();
-    window.location.href = '/login';
+    window.location.href = `${import.meta.env.BASE_URL}login`;
   }
 
   if (loading) return null;
