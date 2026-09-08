@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Users, Link2, ClipboardList, Calendar, CalendarDays, Megaphone, BookOpen, Settings, LogOut, ChevronLeft, ChevronRight, CircleUser as UserCircle, Heart } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface NavItem {
   label: string;
@@ -48,12 +49,13 @@ export default function Sidebar({ role }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
 
-  const nav = role === 'admin' ? adminNav : role === 'Mentor' ? mentorNav : menteeNav;
+  const normalizedRole = role.toLowerCase();
+  const nav = normalizedRole === 'admin' ? adminNav : normalizedRole === 'mentor' ? mentorNav : menteeNav;
+  const logoUrl = `${import.meta.env.BASE_URL}WTS_Central_California_Stacked_White.png`;
 
-  function handleLogout() {
-    localStorage.removeItem('wts_user');
-    localStorage.removeItem('wts_role');
-    navigate('/login');
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    navigate('/login', { replace: true });
   }
 
   return (
@@ -66,7 +68,7 @@ export default function Sidebar({ role }: SidebarProps) {
           {!collapsed && (
             <div className="flex flex-col gap-1">
               <img
-                src="/WTS_Central_California_Stacked_White.png"
+                src={logoUrl}
                 alt="WTS Central California"
                 className="h-10 w-auto object-contain"
                 style={{ maxWidth: 140 }}
