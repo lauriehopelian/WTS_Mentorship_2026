@@ -109,7 +109,7 @@ export default function App() {
   return (
     <AppUserContext.Provider value={appUser}>
       <ToastProvider>
-        <BrowserRouter>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
           <Routes>
             <Route path="/login" element={appUser ? <Navigate to="/dashboard" replace /> : <LoginPage onLogin={setAppUser} />} />
             <Route path="/register" element={appUser ? <Navigate to="/dashboard" replace /> : <RegisterPage />} />
