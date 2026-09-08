@@ -6,19 +6,19 @@ const DOCS = [
     icon: '📋',
     title: 'Program Handbook',
     description: 'Your complete guide to the 2026–27 mentorship program — expectations, timeline, matching process, and how to make the most of your partnership.',
-    file: '/resources/wts-program-handbook.docx',
+    file: 'resources/wts-program-handbook.pdf',
   },
   {
     icon: '🎯',
     title: 'Goal-Setting Worksheet',
     description: 'A structured fillable template for your first meeting. Helps mentors and mentees align on goals, communication style, and meeting cadence.',
-    file: '/resources/wts-goal-setting-worksheet.docx',
+    file: 'resources/wts-goal-setting-worksheet.pdf',
   },
   {
     icon: '📅',
     title: 'Meeting Agenda Template',
     description: 'A 7-block agenda framework for every check-in. Keeps meetings focused and ensures nothing important gets skipped. Includes space for notes.',
-    file: '/resources/wts-meeting-agenda-template.docx',
+    file: 'resources/wts-meeting-agenda-template.pdf',
   },
 ];
 
@@ -66,7 +66,7 @@ export default function ResourcesPage() {
               <h3 className="font-bold mb-2" style={{ color: '#0a1f3c', fontFamily: "'Playfair Display', serif" }}>{doc.title}</h3>
               <p className="text-sm flex-1 mb-4" style={{ color: '#6b6560', lineHeight: 1.6 }}>{doc.description}</p>
               <a
-                href={doc.file}
+                href={`${import.meta.env.BASE_URL}${doc.file}`}
                 download
                 className="flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold text-white w-full"
                 style={{ background: '#0a1f3c' }}
