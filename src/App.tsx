@@ -7,7 +7,7 @@ import { supabase } from './lib/supabase';
 import { PageLoader } from './components/LoadingSpinner';
 
 import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
+import ActivatePage from './pages/ActivatePage';
 import RsvpPage from './pages/RsvpPage';
 import AdminDashboard from './pages/dashboard/AdminDashboard';
 import ParticipantDashboard from './pages/dashboard/ParticipantDashboard';
@@ -28,6 +28,7 @@ export type AppUser = {
   email: string;
   name: string;
   role: 'Mentor' | 'Mentee';
+  status: 'Pending' | 'Active' | 'Alumni';
   is_admin: boolean;
   participant_id: string;
   avatar_color: string;
@@ -40,6 +41,7 @@ export function useAppUser() { return React.useContext(AppUserContext); }
 function AuthRequired({ children, adminOnly = false }: { children: React.ReactNode; adminOnly?: boolean }) {
   const user = React.useContext(AppUserContext);
   if (!user) return <Navigate to="/login" replace />;
+  if (user.status === 'Pending' && !user.is_admin) return <Navigate to="/activate" replace />;
   if (adminOnly && !user.is_admin) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 }
@@ -85,7 +87,7 @@ export default function App() {
     setLoading(true);
     const { data } = await supabase
       .from('participants')
-      .select('id, email, name, role, is_admin, avatar_color, initials')
+      .select('id, email, name, role, status, is_admin, avatar_color, initials')
       .eq('auth_user_id', authUserId)
       .maybeSingle();
 
@@ -95,11 +97,14 @@ export default function App() {
         email: data.email,
         name: data.name,
         role: data.role,
+        status: data.status,
         is_admin: data.is_admin,
         participant_id: data.id,
         avatar_color: data.avatar_color,
         initials: data.initials,
       });
+    } else {
+      setAppUser(null);
     }
     setLoading(false);
   }
@@ -111,8 +116,9 @@ export default function App() {
       <ToastProvider>
         <BrowserRouter basename={import.meta.env.BASE_URL}>
           <Routes>
-            <Route path="/login" element={appUser ? <Navigate to="/dashboard" replace /> : <LoginPage onLogin={setAppUser} />} />
-            <Route path="/register" element={appUser ? <Navigate to="/dashboard" replace /> : <RegisterPage />} />
+            <Route path="/login" element={appUser ? <Navigate to={appUser.status === 'Pending' && !appUser.is_admin ? '/activate' : '/dashboard'} replace /> : <LoginPage onLogin={setAppUser} />} />
+            <Route path="/activate" element={appUser ? <ActivatePage onActivated={() => loadParticipant(appUser.id)} /> : <Navigate to="/login" replace />} />
+            <Route path="/register" element={<Navigate to="/login" replace />} />
             <Route path="/rsvp" element={<RsvpPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/dashboard" element={
@@ -149,7 +155,7 @@ export default function App() {
               <AuthRequired><AppLayout><CalendarPage /></AppLayout></AuthRequired>
             } />
             <Route path="/" element={
-              appUser ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />
+              appUser ? <Navigate to={appUser.status === 'Pending' && !appUser.is_admin ? '/activate' : '/dashboard'} replace /> : <Navigate to="/login" replace />
             } />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
