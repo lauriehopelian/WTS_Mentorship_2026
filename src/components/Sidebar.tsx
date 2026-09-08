@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Link2, ClipboardList, Calendar, CalendarDays, Megaphone, BookOpen, Settings, LogOut, ChevronLeft, ChevronRight, CircleUser as UserCircle, Heart } from 'lucide-react';
+import { LayoutDashboard, Users, UserPlus, Link2, ClipboardList, Calendar, CalendarDays, Megaphone, BookOpen, Settings, LogOut, ChevronLeft, ChevronRight, CircleUser as UserCircle, Heart } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface NavItem {
@@ -12,6 +12,7 @@ interface NavItem {
 const adminNav: NavItem[] = [
   { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
   { label: 'Participants', path: '/participants', icon: Users },
+  { label: 'Invite Participant', path: '/invite-participant', icon: UserPlus },
   { label: 'Matches', path: '/matches', icon: Link2 },
   { label: 'Check-Ins', path: '/checkins', icon: ClipboardList },
   { label: 'Events', path: '/events', icon: Calendar },
