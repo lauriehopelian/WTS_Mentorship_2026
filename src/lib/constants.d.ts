@@ -1,0 +1,11 @@
+export const AVATAR_COLORS: string[];
+export const FIELD_OPTIONS: string[];
+export const GOAL_OPTIONS: string[];
+export const CAREER_STAGES: string[];
+export const COMM_STYLES: string[];
+export const CADENCE_OPTIONS: string[];
+export const AVAILABILITY_OPTIONS: string[];
+export const EVENT_TYPES: string[];
+export const EVENT_TYPE_COLORS: Record<string, string>;
+export const RATING_OPTIONS: string[];
+export const STATUS_COLORS: Record<string, { bg: string; text: string; border: string }>;
