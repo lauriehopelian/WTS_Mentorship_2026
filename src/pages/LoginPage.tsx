@@ -17,6 +17,8 @@ export default function LoginPage({ onLogin }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const logoUrl = `${import.meta.env.BASE_URL}WTS_Central_California_Stacked_White.png`;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -68,8 +70,9 @@ export default function LoginPage({ onLogin }: Props) {
     setError(null);
     setLoading(true);
 
+    const resetUrl = new URL(`${import.meta.env.BASE_URL}reset-password`, window.location.origin).toString();
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(resetEmail.trim().toLowerCase(), {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: resetUrl,
     });
 
     setLoading(false);
@@ -87,7 +90,7 @@ export default function LoginPage({ onLogin }: Props) {
       <div>
         <div className="mb-12">
           <img
-            src="/WTS_Central_California_Stacked_White.png"
+            src={logoUrl}
             alt="WTS Central California"
             className="h-14 w-auto object-contain"
           />
@@ -122,7 +125,7 @@ export default function LoginPage({ onLogin }: Props) {
   const mobileHeader = (
     <div className="lg:hidden flex justify-center mb-8">
       <img
-        src="/WTS_Central_California_Stacked_White.png"
+        src={logoUrl}
         alt="WTS Central California"
         className="h-12 w-auto object-contain"
         style={{ filter: 'invert(1) sepia(1) saturate(0) brightness(0.3)' }}
