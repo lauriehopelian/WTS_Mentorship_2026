@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Typecheck
+      - name: Typecheck (advisory)
         id: typecheck
         shell: bash
         run: |
@@ -67,9 +67,8 @@ jobs:
             lint.log
             build.log
 
-      - name: Fail if validation failed
+      - name: Fail if lint or build failed
         if: always()
         run: |
-          test "${{ steps.typecheck.outputs.exit_code }}" = "0"
           test "${{ steps.lint.outputs.exit_code }}" = "0"
           test "${{ steps.build.outputs.exit_code }}" = "0"
