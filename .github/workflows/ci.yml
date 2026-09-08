@@ -25,13 +25,51 @@ jobs:
         run: npm ci
 
       - name: Typecheck
-        run: npm run typecheck
+        id: typecheck
+        shell: bash
+        run: |
+          set +e
+          npm run typecheck 2>&1 | tee typecheck.log
+          code=${PIPESTATUS[0]}
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
 
       - name: Lint
-        run: npm run lint
+        id: lint
+        shell: bash
+        run: |
+          set +e
+          npm run lint 2>&1 | tee lint.log
+          code=${PIPESTATUS[0]}
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
 
       - name: Build
+        id: build
+        shell: bash
         env:
           VITE_SUPABASE_URL: https://example.supabase.co
           VITE_SUPABASE_ANON_KEY: test-anon-key
-        run: npm run build
+        run: |
+          set +e
+          npm run build 2>&1 | tee build.log
+          code=${PIPESTATUS[0]}
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload validation logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-logs
+          path: |
+            typecheck.log
+            lint.log
+            build.log
+
+      - name: Fail if validation failed
+        if: always()
+        run: |
+          test "${{ steps.typecheck.outputs.exit_code }}" = "0"
+          test "${{ steps.lint.outputs.exit_code }}" = "0"
+          test "${{ steps.build.outputs.exit_code }}" = "0"
